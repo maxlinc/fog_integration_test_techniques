@@ -1,4 +1,7 @@
 require 'vcr'
+require 'vcr/filter_processor'
+require 'vcr/filters/rackspace_confidential'
+require 'vcr/filters/building_servers'
 
 RSpec.configure do |c|
   # so we can use :vcr rather than :vcr => true;
@@ -7,15 +10,17 @@ RSpec.configure do |c|
 end
 
 shared_context "Mock with Fog", :mock => :fog do
-  before { Fog.mock!; puts "Mocking with Fog" }
+  before { Fog.mock! }
   after { Fog.unmock! }
 end
 
-VCR.configure do |c|
-  c.cassette_library_dir = 'spec/cassettes'
-  c.hook_into :webmock
-  c.configure_rspec_metadata!
-  c.allow_http_connections_when_no_cassette = true
-#  c.default_cassette_options.merge!({:record => :none})
+VCR.configure do |config|
+  config.cassette_library_dir = 'spec/cassettes'
+  config.hook_into :webmock
+  config.configure_rspec_metadata!
+  # The live test would not be possible without this option
+  config.allow_http_connections_when_no_cassette = true
+  # filters = VCR::FilterProcessor.new(config)
+  config.register_filter(VCR::Filters::RackspaceConfidential)
+  config.register_filter(VCR::Filters::BuildingServers)
 end
-

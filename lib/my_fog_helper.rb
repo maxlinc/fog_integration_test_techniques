@@ -6,8 +6,9 @@ class MyFogHelper
     
     def create_server
         flavor = service.flavors.first
-        image = service.images.first
-        server_name = "server name"
+        # pick the first Ubuntu image we can find
+        image = service.images.find {|image| image.name =~ /Ubuntu/}
+        server_name = "test_server"
         
         server = service.servers.create :name        => server_name,
                                         :flavor_id   => flavor.id,
@@ -23,6 +24,7 @@ class MyFogHelper
             :provider           => 'rackspace',
             :rackspace_username => @username,
             :rackspace_api_key  => @api_key,
-            :version            => :v2 })
+            :version            => :v2,
+            :rackspace_region   => :ord})
     end
 end
